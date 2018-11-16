@@ -6,40 +6,39 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using WebScanner_api.DTOContainers;
 using WebScanner_api.Models;
 
 namespace WebScanner_api.Controllers
 {
-    [Route("api/order")]
-    [ApiController]
+    [Route("api/responses")]
     [Produces("application/json")]
     public class ResponseApiController : Controller
     {
 
-        public List<OrderResponse> sampleOrderResponses = new List<OrderResponse>()
+        public List<Response> SampleOrderResponses = new List<Response>()
         {
-            new OrderResponse(1,1,new DateTime(2015,7,5,9,30,0,DateTimeKind.Utc), "Sample content for order 1 response"),
-            new OrderResponse(2,2,new DateTime(2015,8,5,12,20,0,DateTimeKind.Utc), "Sample content for order 2 response"),
-            new OrderResponse(3,3,new DateTime(2015,8,5,12,22,0,DateTimeKind.Utc), "Sample content for order 3 response"),
-            new OrderResponse(4,4,new DateTime(2016,11,5,16,20,0,DateTimeKind.Utc), "Sample content for order 4 response"),
-            new OrderResponse(5,5,new DateTime(2017,2,3,3,50,0,DateTimeKind.Utc), "Sample content for order 5 response"),
-            new OrderResponse(6,6,new DateTime(2017,12,6,12,25,0,DateTimeKind.Utc), "Sample content for order 6 response"),
-            new OrderResponse(7,7,new DateTime(2018,9,17,5,30,0,DateTimeKind.Utc), "Sample content for order 7 response"),
-            new OrderResponse(8,8,DateTime.UtcNow, "Sample content for order 8 response")
+            new Response(1,1,new DateTime(2015,7,5,9,30,0,DateTimeKind.Utc), "Sample content for order 1 response"),
+            new Response(2,2,new DateTime(2015,8,5,12,20,0,DateTimeKind.Utc), "Sample content for order 2 response"),
+            new Response(3,3,new DateTime(2015,8,5,12,22,0,DateTimeKind.Utc), "Sample content for order 3 response"),
+            new Response(4,4,new DateTime(2016,11,5,16,20,0,DateTimeKind.Utc), "Sample content for order 4 response"),
+            new Response(5,5,new DateTime(2017,2,3,3,50,0,DateTimeKind.Utc), "Sample content for order 5 response"),
+            new Response(6,6,new DateTime(2017,12,6,12,25,0,DateTimeKind.Utc), "Sample content for order 6 response"),
+            new Response(7,7,new DateTime(2018,9,17,5,30,0,DateTimeKind.Utc), "Sample content for order 7 response"),
+            new Response(8,8,DateTime.UtcNow, "Sample content for order 8 response")
         };
 
-        // GET: api/order?id=1,2,3
+        // GET: api/responses?id=1&&?id=2
         [HttpGet]
-        public IActionResult GetByOrderId([FromQuery]string id)
+        public IActionResult GetByOrderIds(int[] id)
         {
-            var orderIds = ParseQueryParameterToIntArray(id);
-            if (orderIds.Length < 1) return Json(new FailApiResponse("Wrong query parameters format"));
-            else if (orderIds.Contains(666)) return Json(new ErrorApiResponse("Unable to communicate with database"));
+            if (!ModelState.IsValid) return Json(new FailApiResponse("Wrong query parameters format"));
+            else if (id.Contains(666)) return Json(new ErrorApiResponse("Unable to communicate with database"));
             var successApiResponse = new SuccessApiResponse();
             
-            foreach(int orderId in orderIds)
+            foreach(int orderId in id)
             {
-                var response = sampleOrderResponses.Where(orderResponse => orderResponse.OrderId == orderId).FirstOrDefault();
+                var response = SampleOrderResponses.Where(orderResponse => orderResponse.OrderId == orderId).FirstOrDefault();
                 if(response != null)
                 {
                     successApiResponse.Data.GetValueOrDefault("responses").Add(response);
@@ -49,18 +48,7 @@ namespace WebScanner_api.Controllers
             return Json(successApiResponse);
         }
 
-        public int[] ParseQueryParameterToIntArray(string orderIds)
-        {
-            if (String.IsNullOrEmpty(orderIds) || !Regex.IsMatch(orderIds, @"^[0-9]+(,{1}[0-9]*)*$"))
-            {
-                return new int[0]; 
-            } else
-            {
-                return orderIds.Split(',').Select(int.Parse).Distinct().ToArray();
-            }
-        }
-
-        // POST: api/order
+        // POST: api/responses
         [HttpPost]
         public IActionResult Post([FromBody] Dictionary<string, dynamic> parameters)
         {
@@ -88,10 +76,10 @@ namespace WebScanner_api.Controllers
                 return Json(new ErrorApiResponse("Unable to communicate with database"));
             }
 
-            var responses = sampleOrderResponses.Where(response => {
-                return (dateAfter == null ? true : dateAfter.CompareTo(response.ReceivedDatetime) <= 0)
-                && (dateBefore == null ? true : dateBefore.CompareTo(response.ReceivedDatetime) >= 0)
-                && (contentContains == null ? true : response.ResponseContent.Contains(contentContains));
+            var responses = SampleOrderResponses.Where(response => {
+                return (dateAfter == null ? true : dateAfter.CompareTo(response.ReceivedDateTime) <= 0)
+                && (dateBefore == null ? true : dateBefore.CompareTo(response.ReceivedDateTime) >= 0)
+                && (contentContains == null ? true : response.Content.Contains(contentContains));
             }).ToList();
 
             var successApiResponse = new SuccessApiResponse();
@@ -102,16 +90,5 @@ namespace WebScanner_api.Controllers
 
             return Json(successApiResponse);
         }
-
-    }
-
-    
-
-    
-
-    
-
-    
-
-    
+    }  
 }
