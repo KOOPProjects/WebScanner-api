@@ -35,31 +35,69 @@ C# 7.0
 #  Application interface
 
 * Getting response for specific order:
- `GET [host]/api/orders?id=ARGUMENT`
-ARGUMENT: int orderId
 
-* Getting responses for array of specific orders:
- `GET [host]/api/orders?id=ARGUMENT,ARGUMENT,ARGUMENT,...`
-ARGUMENT: int orderId
+ `GET [host]/api/responses?id=ARGUMENT`
+ 
+ or
+ 
+ `GET [host]/api/responses?id=ARGUMENT&id=ARGUMENT2&id=...`
+ 
+ARGUMENT: int[] orderId
+
+* Finding response by received date and optional response content
+`POST [host]/api/responses`
+
+Example POST:
+```
+{
+	"dateAfter" : "2015-01-05T09:30:00Z",
+	"dateBefore" : "2018-01-05T09:30:00Z",
+	"content" : "some content"
+}
+```
+ARGUMENT: DateTime dateAfter - for finding responses received after specified dateAfter argument
+
+ARGUMENT: DateTime dateBefore - for finding responses received before specified dateBefore argument
+
+ARGUMENT: string content - for finding responses containing specified content
+
+
 
 Example JSON responses:
 ```
 {
-    status : "success",
-    data : {
-        "responses" : [
-            { "id" : 1, "orderId" : 13, "dateTime" : "2018-11-05T10:17:00+00:00", "responseContent" : "Some useful content for example" },
-            { "id" : 2, "orderId" : 15, "dateTime" : "2018-10-25T16:17:00+00:00", "responseContent" : "More useful content" },
-        ]
-     }
- } 
+  "data": {
+    "responses": [
+      {
+        "id": 1,
+        "orderId": 1,
+        "receivedDateTime": "2015-07-05T09:30:00Z",
+        "content": "Sample content for order 1 response"
+      },
+      {
+        "id": 2,
+        "orderId": 2,
+        "receivedDateTime": "2015-08-05T12:20:00Z",
+        "content": "Sample content for order 2 response"
+      }
+    ]
+  },
+  "status": "success"
+}
 ```
 
 ```
 {
-    "status" : "error",
-    "message" : "Unable to communicate with database"
- } 
+  "message": "Unable to communicate with database",
+  "status": "error"
+}
+```
+
+```
+{
+  "message": "Wrong query parameters format",
+  "status": "fail"
+}
 ```
 
  #  Solution Structure
