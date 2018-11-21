@@ -36,53 +36,54 @@ C# 7.0
 
 * Getting response for specific order:
 
- `GET [host]/api/responses?id=ARGUMENT`
+ `GET [host]/api/responses?orderId=ARGUMENT`
  
  or
  
- `GET [host]/api/responses?id=ARGUMENT&id=ARGUMENT2&id=...`
+ `GET [host]/api/responses?orderId=ARGUMENT&orderId=ARGUMENT2&orderId=...`
  
-ARGUMENT: int[] orderId
+required ARGUMENT: int[] orderId
 
-* Finding response by received date and optional response content
+* Finding response by received date and content
 `POST [host]/api/responses`
 
 Example POST:
 ```
 {
-	"dateAfter" : "2015-01-05T09:30:00Z",
-	"dateBefore" : "2018-01-05T09:30:00Z",
-	"content" : "some content"
+	"orderIds" : [1,2,3,6,7],
+	"dateAfter" : "2016-12-06T12:25:00Z",
+	"dateBefore" : "2018-12-06T12:25:00Z",
+	"content" : ""
 }
 ```
-ARGUMENT: DateTime dateAfter - for finding responses received after specified dateAfter argument
+required ARGUMENT: int[] orderIds - search will be performed only in responses for specified order ids
 
-ARGUMENT: DateTime dateBefore - for finding responses received before specified dateBefore argument
+optional ARGUMENT: DateTime dateAfter - for finding responses received after specified dateAfter argument
 
-ARGUMENT: string content - for finding responses containing specified content
+optional ARGUMENT: DateTime dateBefore - for finding responses received before specified dateBefore argument
+
+optional ARGUMENT: string content - for finding responses containing specified content
 
 
 
 Example JSON responses:
 ```
 {
-  "data": {
     "responses": [
-      {
-        "id": 1,
-        "orderId": 1,
-        "receivedDateTime": "2015-07-05T09:30:00Z",
-        "content": "Sample content for order 1 response"
-      },
-      {
-        "id": 2,
-        "orderId": 2,
-        "receivedDateTime": "2015-08-05T12:20:00Z",
-        "content": "Sample content for order 2 response"
-      }
-    ]
-  },
-  "status": "success"
+        {
+            "id": 6,
+            "orderId": 6,
+            "receivedDateTime": "2017-12-06T12:25:00Z",
+            "content": "Sample content for order 6 response"
+        },
+        {
+            "id": 7,
+            "orderId": 7,
+            "receivedDateTime": "2018-09-17T05:30:00Z",
+            "content": "Sample content for order 7 response"
+        }
+    ],
+    "status": "success"
 }
 ```
 
