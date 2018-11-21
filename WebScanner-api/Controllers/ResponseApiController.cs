@@ -28,20 +28,20 @@ namespace WebScanner_api.Controllers
             new Response(8,8,DateTime.UtcNow, "Sample content for order 8 response")
         };
 
-        // GET: api/responses?id=1&&?id=2
+        // GET: api/responses?orderId=1&&orderId=2
         [HttpGet]
-        public IActionResult GetByOrderIds(int[] id)
+        public IActionResult GetByOrderIds(int[] orderId)
         {
-            if (!ModelState.IsValid) return Json(new FailApiResponse("Wrong query parameters format"));
-            else if (id.Contains(666)) return Json(new ErrorApiResponse("Unable to communicate with database"));
+            if (!ModelState.IsValid || orderId == null || orderId.Length == 0) return Json(new FailApiResponse("Wrong query parameters format"));
+            else if (orderId.Contains(666)) return Json(new ErrorApiResponse("Unable to communicate with database"));
             var successApiResponse = new SuccessApiResponse();
             
-            foreach(int orderId in id)
+            foreach(int id in orderId)
             {
-                var response = SampleOrderResponses.Where(orderResponse => orderResponse.OrderId == orderId).FirstOrDefault();
+                var response = SampleOrderResponses.Where(orderResponse => orderResponse.OrderId == id).FirstOrDefault();
                 if(response != null)
                 {
-                    successApiResponse.Data.GetValueOrDefault("responses").Add(response);
+                    successApiResponse.Responses.Add(response);
                 }
             }
 
@@ -50,42 +50,29 @@ namespace WebScanner_api.Controllers
 
         // POST: api/responses
         [HttpPost]
-        public IActionResult Post([FromBody] Dictionary<string, dynamic> parameters)
+        public IActionResult FindByDateAndContent([FromBody] IdDateAndContentDTO searchParameters)
         {
-            var dateAfter = parameters.GetValueOrDefault("dateAfter", null);
-            var dateBefore = parameters.GetValueOrDefault("dateBefore", null);
-            var contentContains = parameters.GetValueOrDefault("contentContains", null);
-
-            if(dateAfter == null && dateBefore == null && contentContains == null)
-            {
-                return Json(new FailApiResponse("No parameters passed"));
-            }
-
-            try
-            {
-                if (dateAfter != null) dateAfter = (DateTime)dateAfter;
-                if (dateBefore != null) dateBefore = (DateTime)dateBefore;
-                if (contentContains != null) contentContains = (String)contentContains;
-            }
-            catch(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException e)
+            if (!ModelState.IsValid || searchParameters.OrderIds == null)
             {
                 return Json(new FailApiResponse("Wrong parameters format"));
             }
 
-            if(contentContains != null ? contentContains.Contains("666") : false){
+            //only for sampling purpose:
+            if(searchParameters.Content != null ? searchParameters.Content.Contains("666") : false){
                 return Json(new ErrorApiResponse("Unable to communicate with database"));
             }
 
             var responses = SampleOrderResponses.Where(response => {
-                return (dateAfter == null ? true : dateAfter.CompareTo(response.ReceivedDateTime) <= 0)
-                && (dateBefore == null ? true : dateBefore.CompareTo(response.ReceivedDateTime) >= 0)
-                && (contentContains == null ? true : response.Content.Contains(contentContains));
+                return (searchParameters.OrderIds.Contains<int>(response.OrderId))
+                && (searchParameters.DateAfter.CompareTo(response.ReceivedDateTime) <= 0)
+                && (searchParameters.DateBefore.CompareTo(response.ReceivedDateTime) >= 0)
+                && (response.Content.Contains(searchParameters.Content));
             }).ToList();
 
             var successApiResponse = new SuccessApiResponse();
             if (responses != null)
             {
-                successApiResponse.Data.GetValueOrDefault("responses").AddRange(responses);
+                successApiResponse.Responses.AddRange(responses);
             }
 
             return Json(successApiResponse);
