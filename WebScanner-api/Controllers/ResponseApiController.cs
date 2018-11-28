@@ -52,7 +52,8 @@ namespace WebScanner_api.Controllers
         [HttpPost]
         public IActionResult FindByDateAndContent([FromBody] IdDateAndContentDTO searchParameters)
         {
-            if (!ModelState.IsValid || searchParameters.OrderIds == null)
+
+            if (!ModelState.IsValid || searchParameters.OrderIds == null || searchParameters.OrderIds.Length == 0)
             {
                 return Json(new FailApiResponse("Wrong parameters format"));
             }
@@ -64,8 +65,9 @@ namespace WebScanner_api.Controllers
 
             var responses = SampleOrderResponses.Where(response => {
                 return (searchParameters.OrderIds.Contains<int>(response.OrderId))
-                && (searchParameters.DateAfter.CompareTo(response.ReceivedDateTime) <= 0)
-                && (searchParameters.DateBefore.CompareTo(response.ReceivedDateTime) >= 0)
+                && (searchParameters.DateAfter.CompareTo(response.Date) <= 0)
+                && (searchParameters.DateBefore.CompareTo(response.Date) >= 0)
+
                 && (response.Content.Contains(searchParameters.Content));
             }).ToList();
 
