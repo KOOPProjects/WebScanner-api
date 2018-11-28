@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 namespace WebScanner_api.Models
 {
-    public class Response
+    public class Response : DbEntity
     {
-        public int Id { get; set; }
         public int OrderId { get; set; }
         public DateTime Date { get; set; }
         public string Content { get; set; }
