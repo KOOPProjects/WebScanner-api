@@ -28,7 +28,7 @@ namespace WebScanner_api
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString =
-               "User ID=staging;Password=YWSB14l9TvfB;Host=dev.ptrd.pl;Port=5432;Database=staging;Pooling=true;";
+               "";
             services.AddEntityFrameworkNpgsql().AddDbContext<DatabaseContext>(options =>
             options.UseNpgsql(connectionString));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
