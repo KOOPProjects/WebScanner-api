@@ -4,7 +4,7 @@ WebScanner-api - API for [WebScanner project](https://github.com/KOOPProjects/We
 
 #  Version
 
-v0.1.0
+v0.3.0
 
 #  Goal
 
@@ -84,13 +84,6 @@ Example JSON responses:
         }
     ],
     "status": "success"
-}
-```
-
-```
-{
-  "message": "Unable to communicate with database",
-  "status": "error"
 }
 ```
 
