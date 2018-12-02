@@ -1,6 +1,14 @@
 # Webscanner-api changelog
 
 
+## 0.3.0
+
+- Removed sample data returned in api controller
+
+- Implemented api controller getting data from database
+
+- Implemented database layer with usage of Repository and UnitOfWork pattern
+
 
 ## 0.2.0
 
