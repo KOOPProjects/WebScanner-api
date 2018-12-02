@@ -24,7 +24,7 @@ namespace WebScanner_api.Models.Repositories
                 x =>  ids.Contains(x.OrderId)
                     && (dateAfter.CompareTo(x.Date) <= 0)
                     && (dateBefore.CompareTo(x.Date) >= 0)
-                    && x.Content.Contains(content)
+                    && x.Content.ToLower().Contains(content.ToLower())
                 );
         }
     }
