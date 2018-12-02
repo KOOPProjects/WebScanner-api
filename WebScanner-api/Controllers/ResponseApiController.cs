@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using WebScanner_api.DTOContainers;
-using WebScanner_api.Models;
+using WebScanner_api.Models.Database;
+using WebScanner_api.Models.UnitOfWork;
 
 namespace WebScanner_api.Controllers
 {
@@ -16,33 +11,28 @@ namespace WebScanner_api.Controllers
     public class ResponseApiController : Controller
     {
 
-        public List<Response> SampleOrderResponses = new List<Response>()
+        private readonly DatabaseContext _databaseContext;
+
+        public ResponseApiController(DatabaseContext databaseContext)
         {
-            new Response(1,1,new DateTime(2015,7,5,9,30,0,DateTimeKind.Utc), "Sample content for order 1 response"),
-            new Response(2,2,new DateTime(2015,8,5,12,20,0,DateTimeKind.Utc), "Sample content for order 2 response"),
-            new Response(3,3,new DateTime(2015,8,5,12,22,0,DateTimeKind.Utc), "Sample content for order 3 response"),
-            new Response(4,4,new DateTime(2016,11,5,16,20,0,DateTimeKind.Utc), "Sample content for order 4 response"),
-            new Response(5,5,new DateTime(2017,2,3,3,50,0,DateTimeKind.Utc), "Sample content for order 5 response"),
-            new Response(6,6,new DateTime(2017,12,6,12,25,0,DateTimeKind.Utc), "Sample content for order 6 response"),
-            new Response(7,7,new DateTime(2018,9,17,5,30,0,DateTimeKind.Utc), "Sample content for order 7 response"),
-            new Response(8,8,DateTime.UtcNow, "Sample content for order 8 response")
-        };
+            this._databaseContext = databaseContext;
+        }
 
         // GET: api/responses?orderId=1&&orderId=2
         [HttpGet]
-        public IActionResult GetByOrderIds(int[] orderId)
+        public async Task<IActionResult> GetByOrderIdsAsync(int[] orderId)
         {
             if (!ModelState.IsValid || orderId == null || orderId.Length == 0) return Json(new FailApiResponse("Wrong query parameters format"));
-            else if (orderId.Contains(666)) return Json(new ErrorApiResponse("Unable to communicate with database"));
+
             var successApiResponse = new SuccessApiResponse();
-            
-            foreach(int id in orderId)
+
+            using (UnitOfWork unitOfWork = new UnitOfWork(this._databaseContext))
             {
-                var response = SampleOrderResponses.Where(orderResponse => orderResponse.OrderId == id).FirstOrDefault();
-                if(response != null)
-                {
-                    successApiResponse.Responses.Add(response);
-                }
+                var responses = unitOfWork.ResponseRepository.GetMany(orderId);
+               
+                successApiResponse.Responses.AddRange(responses);
+               
+                await unitOfWork.Save();
             }
 
             return Json(successApiResponse);
@@ -50,7 +40,7 @@ namespace WebScanner_api.Controllers
 
         // POST: api/responses
         [HttpPost]
-        public IActionResult FindByDateAndContent([FromBody] IdDateAndContentDTO searchParameters)
+        public async Task<IActionResult> FindByDateAndContentAsync([FromBody] IdDateAndContentDTO searchParameters)
         {
 
             if (!ModelState.IsValid || searchParameters.OrderIds == null || searchParameters.OrderIds.Length == 0)
@@ -58,23 +48,17 @@ namespace WebScanner_api.Controllers
                 return Json(new FailApiResponse("Wrong parameters format"));
             }
 
-            //only for sampling purpose:
-            if(searchParameters.Content != null ? searchParameters.Content.Contains("666") : false){
-                return Json(new ErrorApiResponse("Unable to communicate with database"));
-            }
-
-            var responses = SampleOrderResponses.Where(response => {
-                return (searchParameters.OrderIds.Contains<int>(response.OrderId))
-                && (searchParameters.DateAfter.CompareTo(response.Date) <= 0)
-                && (searchParameters.DateBefore.CompareTo(response.Date) >= 0)
-
-                && (response.Content.Contains(searchParameters.Content));
-            }).ToList();
-
             var successApiResponse = new SuccessApiResponse();
-            if (responses != null)
+
+            using (UnitOfWork unitOfWork = new UnitOfWork(this._databaseContext))
             {
+                var responses = unitOfWork.ResponseRepository.GetResponseByIdDateAndContent(
+                    searchParameters.OrderIds, searchParameters.DateAfter, 
+                    searchParameters.DateBefore, searchParameters.Content);
+
                 successApiResponse.Responses.AddRange(responses);
+
+                await unitOfWork.Save();
             }
 
             return Json(successApiResponse);

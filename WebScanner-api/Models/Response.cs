@@ -8,11 +8,11 @@ namespace WebScanner_api.Models
         public DateTime Date { get; set; }
         public string Content { get; set; }
       
-        public Response(int id, int orderId, DateTime receivedDateTime, string content)
+        public Response(int id, int orderId, DateTime date, string content)
         {
             Id = id;
             OrderId = orderId;
-            Date = receivedDateTime;
+            Date = date;
             Content = content;
         }
     }
