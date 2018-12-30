@@ -28,7 +28,7 @@ namespace WebScanner_api
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString =
-               "";
+               " ";
             services.AddEntityFrameworkNpgsql().AddDbContext<DatabaseContext>(options =>
             options.UseNpgsql(connectionString));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);

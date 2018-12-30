@@ -7,7 +7,7 @@ namespace WebScanner_api.Models.Repositories.Interfaces
 {
     public interface IResponseRepository
     {
-        IEnumerable<Response> GetResponseByIdDateAndContent(int[] ids, DateTime dateAfter, DateTime dateBefore, string content);
+        IEnumerable<Response> GetResponseByIdDateAndContent(int[] ids, string type, DateTime dateAfter, DateTime dateBefore, string content);
         IEnumerable<Response> GetMany(int[] ids);
     }
 }
