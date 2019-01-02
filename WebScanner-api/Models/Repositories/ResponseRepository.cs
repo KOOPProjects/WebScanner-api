@@ -18,10 +18,11 @@ namespace WebScanner_api.Models.Repositories
             return this.DatabaseContext.Responses.Where(x => ids.Contains(x.OrderId));
         }
 
-        public IEnumerable<Response> GetResponseByIdDateAndContent(int[] ids, DateTime dateAfter, DateTime dateBefore, string content)
+        public IEnumerable<Response> GetResponseByIdDateAndContent(int[] ids, string type, DateTime dateAfter, DateTime dateBefore, string content)
         {
             return this.DatabaseContext.Responses.Where(
                 x =>  ids.Contains(x.OrderId)
+                    && x.Type==type
                     && (dateAfter.CompareTo(x.Date) <= 0)
                     && (dateBefore.CompareTo(x.Date) >= 0)
                     && x.Content.ToLower().Contains(content.ToLower())

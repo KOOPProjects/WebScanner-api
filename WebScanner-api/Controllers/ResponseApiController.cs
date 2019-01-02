@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WebScanner_api.DTOContainers;
 using WebScanner_api.Models.Database;
@@ -29,9 +30,15 @@ namespace WebScanner_api.Controllers
             using (UnitOfWork unitOfWork = new UnitOfWork(this._databaseContext))
             {
                 var responses = unitOfWork.ResponseRepository.GetMany(orderId);
-               
-                successApiResponse.Responses.AddRange(responses);
-               
+
+                List<ResponseDTO> responseDTOs = new List<ResponseDTO>();
+                foreach (var response in responses)
+                {
+                    var dto = new ResponseDTO(response.Id, response.OrderId, response.Date.ToShortDateString(), response.Content, response.Type);
+                    responseDTOs.Add(dto);
+                }
+                successApiResponse.Responses.AddRange(responseDTOs);
+
                 await unitOfWork.Save();
             }
 
@@ -43,7 +50,7 @@ namespace WebScanner_api.Controllers
         public async Task<IActionResult> FindByDateAndContentAsync([FromBody] IdDateAndContentDTO searchParameters)
         {
 
-            if (!ModelState.IsValid || searchParameters.OrderIds == null || searchParameters.OrderIds.Length == 0)
+            if (!ModelState.IsValid || searchParameters.OrderIds == null || searchParameters.OrderIds.Length == 0 || searchParameters.Type == null)
             {
                 return Json(new FailApiResponse("Wrong parameters format"));
             }
@@ -53,10 +60,16 @@ namespace WebScanner_api.Controllers
             using (UnitOfWork unitOfWork = new UnitOfWork(this._databaseContext))
             {
                 var responses = unitOfWork.ResponseRepository.GetResponseByIdDateAndContent(
-                    searchParameters.OrderIds, searchParameters.DateAfter, 
+                    searchParameters.OrderIds, searchParameters.Type, searchParameters.DateAfter, 
                     searchParameters.DateBefore, searchParameters.Content);
 
-                successApiResponse.Responses.AddRange(responses);
+                List<ResponseDTO> responseDTOs = new List<ResponseDTO>();
+                foreach(var response in responses)
+                {
+                    var dto = new ResponseDTO(response.Id, response.OrderId, response.Date.ToShortDateString(), response.Content, response.Type);
+                    responseDTOs.Add(dto);
+                }
+                successApiResponse.Responses.AddRange(responseDTOs);
 
                 await unitOfWork.Save();
             }

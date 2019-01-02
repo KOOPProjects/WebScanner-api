@@ -5,14 +5,14 @@ namespace WebScanner_api.DTOContainers
 {
     public class SuccessApiResponse : ApiResponse
     {
-        public List<Response> Responses { get; set; }
+        public List<ResponseDTO> Responses { get; set; }
 
         public SuccessApiResponse() : base("success")
         {
-            Responses = new List<Response>();
+            Responses = new List<ResponseDTO>();
         }
 
-        public SuccessApiResponse(List<Response> orderResponses) : base("success")
+        public SuccessApiResponse(List<ResponseDTO> orderResponses) : base("success")
         {
             Responses = orderResponses;
         }
